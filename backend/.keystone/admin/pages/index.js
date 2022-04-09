@@ -24,7 +24,10 @@ export default function Home() {
           User: _allUsersMeta {
             count
           }
-          Product: _allProductsMeta {
+          Item: _allItemsMeta {
+            count
+          }
+          Order: _allOrdersMeta {
             count
           }
         }

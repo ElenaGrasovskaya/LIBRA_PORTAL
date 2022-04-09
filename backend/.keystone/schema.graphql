@@ -1,9 +1,25 @@
+input ItemRelateToOneInput {
+  create: ItemCreateInput
+  connect: ItemWhereUniqueInput
+  disconnect: ItemWhereUniqueInput
+  disconnectAll: Boolean
+}
+
+input OrderRelateToOneInput {
+  create: OrderCreateInput
+  connect: OrderWhereUniqueInput
+  disconnect: OrderWhereUniqueInput
+  disconnectAll: Boolean
+}
+
 """ A keystone list """
 type User {
   id: ID!
   name: String
   email: String
   password_is_set: Boolean
+  itemsCreated: Item
+  ordersCreated: Order
   passwordResetToken_is_set: Boolean
   passwordResetIssuedAt: String
   passwordResetRedeemedAt: String
@@ -56,6 +72,10 @@ input UserWhereInput {
   email_in: [String]
   email_not_in: [String]
   password_is_set: Boolean
+  itemsCreated: ItemWhereInput
+  itemsCreated_is_null: Boolean
+  ordersCreated: OrderWhereInput
+  ordersCreated_is_null: Boolean
   passwordResetToken_is_set: Boolean
   passwordResetIssuedAt: String
   passwordResetIssuedAt_not: String
@@ -103,6 +123,10 @@ enum SortUsersBy {
   name_DESC
   email_ASC
   email_DESC
+  itemsCreated_ASC
+  itemsCreated_DESC
+  ordersCreated_ASC
+  ordersCreated_DESC
   passwordResetIssuedAt_ASC
   passwordResetIssuedAt_DESC
   passwordResetRedeemedAt_ASC
@@ -117,6 +141,8 @@ input UserUpdateInput {
   name: String
   email: String
   password: String
+  itemsCreated: ItemRelateToOneInput
+  ordersCreated: OrderRelateToOneInput
   passwordResetToken: String
   passwordResetIssuedAt: String
   passwordResetRedeemedAt: String
@@ -134,6 +160,8 @@ input UserCreateInput {
   name: String
   email: String
   password: String
+  itemsCreated: ItemRelateToOneInput
+  ordersCreated: OrderRelateToOneInput
   passwordResetToken: String
   passwordResetIssuedAt: String
   passwordResetRedeemedAt: String
@@ -146,18 +174,28 @@ input UsersCreateInput {
   data: UserCreateInput
 }
 
+input UserRelateToOneInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+  disconnect: UserWhereUniqueInput
+  disconnectAll: Boolean
+}
+
 """ A keystone list """
-type Product {
+type Item {
   id: ID!
   name: String
+  author: User
+  order: Order
   description: String
   status: String
   price: Int
+  dateCreated: String
 }
 
-input ProductWhereInput {
-  AND: [ProductWhereInput]
-  OR: [ProductWhereInput]
+input ItemWhereInput {
+  AND: [ItemWhereInput]
+  OR: [ItemWhereInput]
   id: ID
   id_not: ID
   id_in: [ID]
@@ -180,6 +218,10 @@ input ProductWhereInput {
   name_not_ends_with_i: String
   name_in: [String]
   name_not_in: [String]
+  author: UserWhereInput
+  author_is_null: Boolean
+  order: OrderWhereInput
+  order_is_null: Boolean
   description: String
   description_not: String
   description_contains: String
@@ -224,46 +266,293 @@ input ProductWhereInput {
   price_gte: Int
   price_in: [Int]
   price_not_in: [Int]
+  dateCreated: String
+  dateCreated_not: String
+  dateCreated_lt: String
+  dateCreated_lte: String
+  dateCreated_gt: String
+  dateCreated_gte: String
+  dateCreated_in: [String]
+  dateCreated_not_in: [String]
 }
 
-input ProductWhereUniqueInput {
+input ItemWhereUniqueInput {
   id: ID!
 }
 
-enum SortProductsBy {
+enum SortItemsBy {
   id_ASC
   id_DESC
   name_ASC
   name_DESC
+  author_ASC
+  author_DESC
+  order_ASC
+  order_DESC
   description_ASC
   description_DESC
   status_ASC
   status_DESC
   price_ASC
   price_DESC
+  dateCreated_ASC
+  dateCreated_DESC
 }
 
-input ProductUpdateInput {
+input ItemUpdateInput {
   name: String
+  author: UserRelateToOneInput
+  order: OrderRelateToOneInput
   description: String
   status: String
   price: Int
+  dateCreated: String
 }
 
-input ProductsUpdateInput {
+input ItemsUpdateInput {
   id: ID!
-  data: ProductUpdateInput
+  data: ItemUpdateInput
 }
 
-input ProductCreateInput {
+input ItemCreateInput {
   name: String
+  author: UserRelateToOneInput
+  order: OrderRelateToOneInput
   description: String
   status: String
   price: Int
+  dateCreated: String
 }
 
-input ProductsCreateInput {
-  data: ProductCreateInput
+input ItemsCreateInput {
+  data: ItemCreateInput
+}
+
+input ItemRelateToManyInput {
+  create: [ItemCreateInput]
+  connect: [ItemWhereUniqueInput]
+  disconnect: [ItemWhereUniqueInput]
+  disconnectAll: Boolean
+}
+
+""" A keystone list """
+type Order {
+  id: ID!
+  name: String
+  author: User
+  items(where: ItemWhereInput, search: String, sortBy: [SortItemsBy!], orderBy: String, first: Int, skip: Int): [Item!]!
+  _itemsMeta(where: ItemWhereInput, search: String, sortBy: [SortItemsBy!], orderBy: String, first: Int, skip: Int): _QueryMeta
+  description: String
+  dateCreated: String
+  status: String
+  clientPrice: Int
+  clientPrepay: Int
+  clientDept: Int
+  expence: Int
+  interest: Int
+  personalExpence: Int
+}
+
+input OrderWhereInput {
+  AND: [OrderWhereInput]
+  OR: [OrderWhereInput]
+  id: ID
+  id_not: ID
+  id_in: [ID]
+  id_not_in: [ID]
+  name: String
+  name_not: String
+  name_contains: String
+  name_not_contains: String
+  name_starts_with: String
+  name_not_starts_with: String
+  name_ends_with: String
+  name_not_ends_with: String
+  name_i: String
+  name_not_i: String
+  name_contains_i: String
+  name_not_contains_i: String
+  name_starts_with_i: String
+  name_not_starts_with_i: String
+  name_ends_with_i: String
+  name_not_ends_with_i: String
+  name_in: [String]
+  name_not_in: [String]
+  author: UserWhereInput
+  author_is_null: Boolean
+
+  """ condition must be true for all nodes """
+  items_every: ItemWhereInput
+
+  """ condition must be true for at least 1 node """
+  items_some: ItemWhereInput
+
+  """ condition must be false for all nodes """
+  items_none: ItemWhereInput
+  description: String
+  description_not: String
+  description_contains: String
+  description_not_contains: String
+  description_starts_with: String
+  description_not_starts_with: String
+  description_ends_with: String
+  description_not_ends_with: String
+  description_i: String
+  description_not_i: String
+  description_contains_i: String
+  description_not_contains_i: String
+  description_starts_with_i: String
+  description_not_starts_with_i: String
+  description_ends_with_i: String
+  description_not_ends_with_i: String
+  description_in: [String]
+  description_not_in: [String]
+  dateCreated: String
+  dateCreated_not: String
+  dateCreated_lt: String
+  dateCreated_lte: String
+  dateCreated_gt: String
+  dateCreated_gte: String
+  dateCreated_in: [String]
+  dateCreated_not_in: [String]
+  status: String
+  status_not: String
+  status_contains: String
+  status_not_contains: String
+  status_starts_with: String
+  status_not_starts_with: String
+  status_ends_with: String
+  status_not_ends_with: String
+  status_i: String
+  status_not_i: String
+  status_contains_i: String
+  status_not_contains_i: String
+  status_starts_with_i: String
+  status_not_starts_with_i: String
+  status_ends_with_i: String
+  status_not_ends_with_i: String
+  status_in: [String]
+  status_not_in: [String]
+  clientPrice: Int
+  clientPrice_not: Int
+  clientPrice_lt: Int
+  clientPrice_lte: Int
+  clientPrice_gt: Int
+  clientPrice_gte: Int
+  clientPrice_in: [Int]
+  clientPrice_not_in: [Int]
+  clientPrepay: Int
+  clientPrepay_not: Int
+  clientPrepay_lt: Int
+  clientPrepay_lte: Int
+  clientPrepay_gt: Int
+  clientPrepay_gte: Int
+  clientPrepay_in: [Int]
+  clientPrepay_not_in: [Int]
+  clientDept: Int
+  clientDept_not: Int
+  clientDept_lt: Int
+  clientDept_lte: Int
+  clientDept_gt: Int
+  clientDept_gte: Int
+  clientDept_in: [Int]
+  clientDept_not_in: [Int]
+  expence: Int
+  expence_not: Int
+  expence_lt: Int
+  expence_lte: Int
+  expence_gt: Int
+  expence_gte: Int
+  expence_in: [Int]
+  expence_not_in: [Int]
+  interest: Int
+  interest_not: Int
+  interest_lt: Int
+  interest_lte: Int
+  interest_gt: Int
+  interest_gte: Int
+  interest_in: [Int]
+  interest_not_in: [Int]
+  personalExpence: Int
+  personalExpence_not: Int
+  personalExpence_lt: Int
+  personalExpence_lte: Int
+  personalExpence_gt: Int
+  personalExpence_gte: Int
+  personalExpence_in: [Int]
+  personalExpence_not_in: [Int]
+}
+
+input OrderWhereUniqueInput {
+  id: ID!
+}
+
+enum SortOrdersBy {
+  id_ASC
+  id_DESC
+  name_ASC
+  name_DESC
+  author_ASC
+  author_DESC
+  items_ASC
+  items_DESC
+  description_ASC
+  description_DESC
+  dateCreated_ASC
+  dateCreated_DESC
+  status_ASC
+  status_DESC
+  clientPrice_ASC
+  clientPrice_DESC
+  clientPrepay_ASC
+  clientPrepay_DESC
+  clientDept_ASC
+  clientDept_DESC
+  expence_ASC
+  expence_DESC
+  interest_ASC
+  interest_DESC
+  personalExpence_ASC
+  personalExpence_DESC
+}
+
+input OrderUpdateInput {
+  name: String
+  author: UserRelateToOneInput
+  items: ItemRelateToManyInput
+  description: String
+  dateCreated: String
+  status: String
+  clientPrice: Int
+  clientPrepay: Int
+  clientDept: Int
+  expence: Int
+  interest: Int
+  personalExpence: Int
+}
+
+input OrdersUpdateInput {
+  id: ID!
+  data: OrderUpdateInput
+}
+
+input OrderCreateInput {
+  name: String
+  author: UserRelateToOneInput
+  items: ItemRelateToManyInput
+  description: String
+  dateCreated: String
+  status: String
+  clientPrice: Int
+  clientPrepay: Int
+  clientDept: Int
+  expence: Int
+  interest: Int
+  personalExpence: Int
+}
+
+input OrdersCreateInput {
+  data: OrderCreateInput
 }
 
 """
@@ -459,18 +748,30 @@ type Query {
   """ Retrieve the meta-data for the User list. """
   _UsersMeta: _ListMeta
 
-  """ Search for all Product items which match the where clause. """
-  allProducts(where: ProductWhereInput, search: String, sortBy: [SortProductsBy!], orderBy: String, first: Int, skip: Int): [Product]
+  """ Search for all Item items which match the where clause. """
+  allItems(where: ItemWhereInput, search: String, sortBy: [SortItemsBy!], orderBy: String, first: Int, skip: Int): [Item]
 
-  """ Search for the Product item with the matching ID. """
-  Product(where: ProductWhereUniqueInput!): Product
+  """ Search for the Item item with the matching ID. """
+  Item(where: ItemWhereUniqueInput!): Item
 
-  """ Perform a meta-query on all Product items which match the where clause. 
+  """ Perform a meta-query on all Item items which match the where clause. """
+  _allItemsMeta(where: ItemWhereInput, search: String, sortBy: [SortItemsBy!], orderBy: String, first: Int, skip: Int): _QueryMeta
+
+  """ Retrieve the meta-data for the Item list. """
+  _ItemsMeta: _ListMeta
+
+  """ Search for all Order items which match the where clause. """
+  allOrders(where: OrderWhereInput, search: String, sortBy: [SortOrdersBy!], orderBy: String, first: Int, skip: Int): [Order]
+
+  """ Search for the Order item with the matching ID. """
+  Order(where: OrderWhereUniqueInput!): Order
+
+  """ Perform a meta-query on all Order items which match the where clause. 
   """
-  _allProductsMeta(where: ProductWhereInput, search: String, sortBy: [SortProductsBy!], orderBy: String, first: Int, skip: Int): _QueryMeta
+  _allOrdersMeta(where: OrderWhereInput, search: String, sortBy: [SortOrdersBy!], orderBy: String, first: Int, skip: Int): _QueryMeta
 
-  """ Retrieve the meta-data for the Product list. """
-  _ProductsMeta: _ListMeta
+  """ Retrieve the meta-data for the Order list. """
+  _OrdersMeta: _ListMeta
 
   """ Retrieve the meta-data for all lists. """
   _ksListsMeta(where: _ksListsMetaInput): [_ListMeta]
@@ -500,23 +801,41 @@ type Mutation {
   """ Delete multiple User items by ID. """
   deleteUsers(ids: [ID!]): [User]
 
-  """ Create a single Product item. """
-  createProduct(data: ProductCreateInput): Product
+  """ Create a single Item item. """
+  createItem(data: ItemCreateInput): Item
 
-  """ Create multiple Product items. """
-  createProducts(data: [ProductsCreateInput]): [Product]
+  """ Create multiple Item items. """
+  createItems(data: [ItemsCreateInput]): [Item]
 
-  """ Update a single Product item by ID. """
-  updateProduct(id: ID!, data: ProductUpdateInput): Product
+  """ Update a single Item item by ID. """
+  updateItem(id: ID!, data: ItemUpdateInput): Item
 
-  """ Update multiple Product items by ID. """
-  updateProducts(data: [ProductsUpdateInput]): [Product]
+  """ Update multiple Item items by ID. """
+  updateItems(data: [ItemsUpdateInput]): [Item]
 
-  """ Delete a single Product item by ID. """
-  deleteProduct(id: ID!): Product
+  """ Delete a single Item item by ID. """
+  deleteItem(id: ID!): Item
 
-  """ Delete multiple Product items by ID. """
-  deleteProducts(ids: [ID!]): [Product]
+  """ Delete multiple Item items by ID. """
+  deleteItems(ids: [ID!]): [Item]
+
+  """ Create a single Order item. """
+  createOrder(data: OrderCreateInput): Order
+
+  """ Create multiple Order items. """
+  createOrders(data: [OrdersCreateInput]): [Order]
+
+  """ Update a single Order item by ID. """
+  updateOrder(id: ID!, data: OrderUpdateInput): Order
+
+  """ Update multiple Order items by ID. """
+  updateOrders(data: [OrdersUpdateInput]): [Order]
+
+  """ Delete a single Order item by ID. """
+  deleteOrder(id: ID!): Order
+
+  """ Delete multiple Order items by ID. """
+  deleteOrders(ids: [ID!]): [Order]
   authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult!
   createInitialUser(data: CreateInitialUserInput!): UserAuthenticationWithPasswordSuccess!
   endSession: Boolean!

@@ -1,9 +1,3 @@
-function IndexPage() {
-  return (
-    <div>
-      <p>Hello!</p>
-    </div>
-  );
-}
+import OrdersList from './ordersList';
 
-export default IndexPage;
+export default OrdersList;

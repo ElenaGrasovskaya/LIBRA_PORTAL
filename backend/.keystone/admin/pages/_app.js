@@ -7,6 +7,7 @@ import { Core } from '@keystone-ui/core';
 import * as viewba968490 from '../../../node_modules/@keystone-next/fields/types/mongoId/views';
 import * as view5ec72749 from '../../../node_modules/@keystone-next/fields/types/text/views';
 import * as view5ed292b8 from '../../../node_modules/@keystone-next/fields/types/password/views';
+import * as viewcb111e67 from '../../../node_modules/@keystone-next/fields/types/relationship/views';
 import * as view79db0d05 from '../../../node_modules/@keystone-next/fields/types/timestamp/views';
 import * as vieweaba274f from '../../../node_modules/@keystone-next/fields/types/select/views';
 import * as view5845d12e from '../../../node_modules/@keystone-next/fields/types/integer/views';
@@ -17,6 +18,7 @@ const fieldViews = {
   viewba968490,
   view5ec72749,
   view5ed292b8,
+  viewcb111e67,
   view79db0d05,
   vieweaba274f,
   view5845d12e,
@@ -194,7 +196,7 @@ export default function App({ Component, pageProps }) {
     <Core>
       <KeystoneProvider
         adminConfig={adminConfig}
-        adminMetaHash="c0xp2c"
+        adminMetaHash="7cebag"
         fieldViews={fieldViews}
         lazyMetadataQuery={lazyMetadataQuery}
       >

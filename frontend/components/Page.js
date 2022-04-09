@@ -13,8 +13,9 @@ const GlobalStyles = createGlobalStyle`
 }
 html {
   --red: #ff0000;
+  --green: #abc038
   --black: #393939;
-  --grey: #BADA55;
+  --grey: #666;
   --gray: var(--grey);
   --lightGrey: #e1e1e1; 
   --lightGray: var(--lightGrey);
@@ -58,7 +59,7 @@ function Page({ children }) {
     <div>
       <GlobalStyles />
       <Header />
-      <h1>I'm the page component</h1>
+      <h1>Welcome</h1>
       <InnerStyles>{children}</InnerStyles>
     </div>
   );

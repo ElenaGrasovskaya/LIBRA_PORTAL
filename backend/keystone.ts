@@ -1,7 +1,8 @@
 /* eslint-disable import/order */
 import { config, createSchema } from '@keystone-next/keystone/schema';
 import { User } from './schemas/User';
-import { Product } from './schemas/Product';
+import { Item } from './schemas/Item';
+import { Order } from './schemas/Order';
 import 'dotenv/config';
 import { createAuth } from '@keystone-next/auth';
 import {
@@ -43,7 +44,8 @@ export default withAuth(
     lists: createSchema({
       // Schema items go in here
       User,
-      Product,
+      Item,
+      Order,
     }),
     ui: {
       // TODO: change this for roles

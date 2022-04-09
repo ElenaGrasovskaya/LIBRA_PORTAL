@@ -8,6 +8,8 @@ export const User = list({
     name: text({ isRequired: true }),
     email: text({ isRequired: true, isUnique: true }),
     password: password(),
+    itemsCreated: relationship({ref:'Item.author'}),
+    ordersCreated: relationship({ref:'Order.author'}),
     // add roles orders
   },
 });
