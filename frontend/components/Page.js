@@ -59,7 +59,6 @@ function Page({ children }) {
     <div>
       <GlobalStyles />
       <Header />
-      <h1>Welcome</h1>
       <InnerStyles>{children}</InnerStyles>
     </div>
   );

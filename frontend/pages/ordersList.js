@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/client';
-import { link } from 'react-dom';
+import Link from 'next/link';
 import styled from 'styled-components';
 
 const ALL_ORDERS_LIST = gql`
@@ -24,24 +24,27 @@ function OrdersList() {
   return (
     <div>
       {data.allOrders.map((order) => (
-        <Order key={order.id}>
-          <div>{order.name}</div>
-          <div>{order.clientPrice}</div>
-          {() => {
-            if (order.status === 'PROGRESS')
-              return (
-                <div>
-                  <p>&#9745;</p>
-                </div>
-              );
-            return (
-              <div>
-                <p>&#10060;</p>
-              </div>
-            );
-          }}
-        </Order>
+        <Link href={`edit/${order.id}`}>
+          <Order key={order.id}>
+            <div>{order.name}</div>
+            <div>{order.clientPrice}</div>
+            {order.status === 'PROGRESS' ? (
+              <FaIcons>
+                <i className="fa fa-truck" aria-hidden="true" />
+              </FaIcons>
+            ) : (
+              <FaIcons>
+                <i className="fa fa-check" aria-hidden="true" />
+              </FaIcons>
+            )}
+          </Order>
+        </Link>
       ))}
+      <AddNew>
+        <Link href="/newOrder">
+          <i className="fa fa-plus" aria-hidden="true" />
+        </Link>
+      </AddNew>
     </div>
   );
 }
@@ -49,6 +52,8 @@ function OrdersList() {
 export default OrdersList;
 
 const Order = styled.div`
+  width: 90%;
+
   display: grid;
   grid-template-columns: 4fr 1fr 1fr;
   & div {
@@ -56,5 +61,32 @@ const Order = styled.div`
     padding: 1rem;
     margin: 0.2rem;
     background-color: lightgray;
+  }
+`;
+
+const FaIcons = styled.div`
+  position: relative;
+  & i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+`;
+
+const AddNew = styled.div`
+  position: relative;
+  width: 10rem;
+  height: 4rem;
+  margin-top: 0.2rem;
+  margin-left: 0.1rem;
+  background-color: #e8ff63;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+
+  & i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 `;

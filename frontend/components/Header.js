@@ -4,7 +4,7 @@ import Nav from './Nav';
 
 const Logo = styled.h1`
   background: #abc038;
-  font-size: 4rem;
+  font-size: 1.2rem;
   margin-left: 2rem;
   position: relative;
   z-index: 2;
@@ -19,7 +19,7 @@ const Logo = styled.h1`
 
 const HeaderStyles = styled.header`
   .bar {
-    border-bottom: 10px solid var(--black, black);
+    border-bottom: 3px solid #666;
     display: grid;
     grid-template-columns: auto 1fr;
     justify-content: space-between;
@@ -39,10 +39,6 @@ export default function Header() {
         <Logo>
           <Link href="/">LIBRA PORTAL</Link>
         </Logo>
-      </div>
-
-      <div className="sub-bar">
-        <p>Search</p>
       </div>
       <Nav />
     </HeaderStyles>

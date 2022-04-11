@@ -1,12 +1,30 @@
 import Link from 'next/link';
+import styled from 'styled-components';
 
 export default function Nav() {
   return (
-    <nav>
+    <Navigation>
       <Link href="/ordersList">Заказы</Link>
-      <br />
+
       <Link href="/calc">Рассчеты</Link>
-      <br />
-    </nav>
+    </Navigation>
   );
 }
+
+const Navigation = styled.nav`
+  padding-left: 2rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+
+  & a {
+    background: #666;
+    font-size: 1.2rem;
+    color: white;
+    z-index: 2;
+    transform: skew(-7deg);
+    text-decoration: none;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+  }
+`;
