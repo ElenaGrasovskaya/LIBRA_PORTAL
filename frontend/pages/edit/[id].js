@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React from 'react';
+import React, { useState } from 'react';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import Link from 'next/link';
 import styled from 'styled-components';
 import { useRouter } from 'next/router';
@@ -28,28 +28,70 @@ const ORDER_DETAILS = gql`
   }
 `;
 
+const CREATE_NEW_ITEM = gql`
+  mutation CREATE_NEW_ITEM($id: ID!) {
+    createItem(data: { name: "", price: 0, order: { connect: { id: $id } } }) {
+      name
+      price
+      dateCreated
+      order {
+        id
+      }
+    }
+  }
+`;
+
+const DELETE_ITEM = gql`
+  mutation DELETE_ITEM($id: ID!) {
+    deleteItem(id: $id) {
+      id
+    }
+  }
+`;
+
 function EditProject() {
   const router = useRouter();
   const projectId = router.query.id || '';
+  const [currentItemId, setCurrentItemId] = useState('');
 
   console.log(projectId);
   const { data, error, loading } = useQuery(ORDER_DETAILS, {
     variables: { id: projectId },
   });
+
+  const [
+    createItem,
+    { data: itemData, error: itemError, loading: itemLoading },
+  ] = useMutation(CREATE_NEW_ITEM, {
+    variables: { id: projectId },
+  });
+
+  const [
+    deleteItem,
+    {
+      data: itemDeleteData,
+      error: itemDeleteError,
+      loading: itemDeleteLoading,
+    },
+  ] = useMutation(DELETE_ITEM, {
+    variables: { id: currentItemId },
+  });
+
   if (loading) return <p>...грууузимся</p>;
   if (error) return null;
   const currentOrder = data.Order;
 
-  console.log(data);
+  console.log(itemDeleteError);
+
   return (
     <FormContainer>
       <FormBlock>
         <label htmlFor="orderName">Заказ</label>
-        <input type="text" id="orderName" value={currentOrder.name} />
+        <input type="text" id="orderName" placeholder={currentOrder.name} />
 
         {currentOrder.status === 'PROGRESS' ? (
           <FaIcons>
-            <i className="fa fa-truck" aria-hidden="true" />
+            <i className="fa fa-cogs" aria-hidden="true" />
           </FaIcons>
         ) : (
           <FaIcons>
@@ -62,7 +104,7 @@ function EditProject() {
         <input
           type="text"
           id="orderClientPrice"
-          value={currentOrder.clientPrice}
+          placeholder={currentOrder.clientPrice}
         />
       </FormBlock>
 
@@ -71,7 +113,7 @@ function EditProject() {
         <input
           type="text"
           id="orderClientPrepay"
-          value={currentOrder.clientPrepay}
+          placeholder={currentOrder.clientPrepay}
         />
       </FormBlock>
 
@@ -80,22 +122,46 @@ function EditProject() {
         <input
           type="text"
           id="orderClientDept"
-          value={currentOrder.clientDept}
+          placeholder={currentOrder.clientDept}
         />
       </FormBlock>
 
       {currentOrder.items.map((item, index) => (
         <ItemsBlock>
           <label htmlFor={item.name + index}>{index + 1}</label>
-          <input type="text" id={item.name + index} value={item.name} />
+          <input type="text" id={item.name + index} placeholder={item.name} />
 
-          <input type="text" id={item.price + index} value={item.price} />
+          <input type="text" id={item.price + index} placeholder={item.price} />
+          <StyledButtonCheck>
+            <i className="fa fa-check" aria-hidden="true" />
+          </StyledButtonCheck>
+          <StyledButtonCross onClick={() => setCurrentItemId(item.id)}>
+            <i className="fa fa-times" aria-hidden="true" />
+          </StyledButtonCross>
         </ItemsBlock>
       ))}
+      <FormBlock>
+        <AddItenButton
+          type="button"
+          onClick={async (e) => {
+            e.preventDefault();
+            const res = await createItem();
+            console.log('res', res);
+          }}
+        >
+          <FaIcons>
+            <i className="fa fa-plus" aria-hidden="true" />
+          </FaIcons>
+        </AddItenButton>
+      </FormBlock>
 
       <FormBlock>
         <label htmlFor="orderExpence">Затраты</label>
-        <input type="text" id="orderExpence" value={currentOrder.expence} />
+        <input
+          type="text"
+          id="orderExpence"
+          placeholder={currentOrder.expence}
+        />
       </FormBlock>
 
       <FormBlock>
@@ -103,7 +169,7 @@ function EditProject() {
         <input
           type="text"
           id="orderEarning"
-          value={currentOrder.clientPrice - currentOrder.expence}
+          placeholder={currentOrder.clientPrice - currentOrder.expence}
         />
       </FormBlock>
 
@@ -112,7 +178,7 @@ function EditProject() {
         <input
           type="text"
           id="orderPersonalExpences"
-          value={currentOrder.personalExpence}
+          placeholder={currentOrder.personalExpence}
         />
       </FormBlock>
     </FormContainer>
@@ -183,4 +249,26 @@ const ItemsBlock = styled.div`
 const FormContainer = styled.form`
   display: flex;
   flex-direction: column;
+`;
+
+const StyledButtonCheck = styled.button`
+  border: none;
+  background-color: lightgreen;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0.2rem;
+`;
+
+const StyledButtonCross = styled.button`
+  border: none;
+  background-color: lightcoral;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0.2rem;
+`;
+
+const AddItenButton = styled.button`
+  border: none;
+  width: 10rem;
+  background-color: lightblue;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0.2rem;
 `;
