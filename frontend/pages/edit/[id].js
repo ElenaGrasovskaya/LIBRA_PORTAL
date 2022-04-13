@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/client';
 import Link from 'next/link';
@@ -33,10 +33,19 @@ const CREATE_NEW_ITEM = gql`
     createItem(data: { name: "", price: 0, order: { connect: { id: $id } } }) {
       name
       price
-      dateCreated
       order {
         id
       }
+    }
+  }
+`;
+
+const UPDATE_ITEM = gql`
+  mutation UPDATE_ITEM($id: ID!, $name: String, $price: Int) {
+    updateItem(id: $id, data: { name: $name, price: $price }) {
+      id
+      name
+      price
     }
   }
 `;
@@ -52,10 +61,18 @@ const DELETE_ITEM = gql`
 function EditProject() {
   const router = useRouter();
   const projectId = router.query.id || '';
-  const [currentItemId, setCurrentItemId] = useState('');
+  const [projectData, setProjectData] = useState({});
+  const [projectItems, setProjectItems] = useState([]);
+  const [currentItem, setCurrentItem] = useState({
+    name: '',
+    price: 0,
+    id: '',
+  });
+
+  console.log('projectItems', projectItems);
 
   console.log(projectId);
-  const { data, error, loading } = useQuery(ORDER_DETAILS, {
+  const { data, error, loading, refetch } = useQuery(ORDER_DETAILS, {
     variables: { id: projectId },
   });
 
@@ -67,6 +84,21 @@ function EditProject() {
   });
 
   const [
+    updateItem,
+    {
+      data: itemUpdateData,
+      error: itemUpdateError,
+      loading: itemUpdateLoading,
+    },
+  ] = useMutation(UPDATE_ITEM, {
+    variables: {
+      id: currentItem.id,
+      name: currentItem.name,
+      price: currentItem.price,
+    },
+  });
+
+  const [
     deleteItem,
     {
       data: itemDeleteData,
@@ -74,22 +106,35 @@ function EditProject() {
       loading: itemDeleteLoading,
     },
   ] = useMutation(DELETE_ITEM, {
-    variables: { id: currentItemId },
+    variables: { id: currentItem.id },
   });
+
+  useEffect(() => {
+    if (loading) return <p>...грууузимся</p>;
+    if (error) return null;
+    if (!data) return null;
+    setProjectData(data.Order);
+    setProjectItems(data.Order.items);
+  }, [data]);
 
   if (loading) return <p>...грууузимся</p>;
   if (error) return null;
-  const currentOrder = data.Order;
-
-  console.log(itemDeleteError);
-
+  if (!data) return null;
+  const currentProjectItems = data.Order.items;
+  console.log('base', currentProjectItems);
+  console.log('state', projectItems);
+  const calculateExpense = () => {
+    if (projectItems) {
+      return projectItems.reduce((acc, item) => acc + item.price, 0);
+    }
+  };
   return (
-    <FormContainer>
+    <FormContainer onChange={() => setProjectData(projectData)}>
       <FormBlock>
         <label htmlFor="orderName">Заказ</label>
-        <input type="text" id="orderName" placeholder={currentOrder.name} />
+        <input type="text" id="orderName" placeholder={projectData.name} />
 
-        {currentOrder.status === 'PROGRESS' ? (
+        {projectData.status === 'PROGRESS' ? (
           <FaIcons>
             <i className="fa fa-cogs" aria-hidden="true" />
           </FaIcons>
@@ -104,7 +149,7 @@ function EditProject() {
         <input
           type="text"
           id="orderClientPrice"
-          placeholder={currentOrder.clientPrice}
+          placeholder={projectData.clientPrice}
         />
       </FormBlock>
 
@@ -113,7 +158,7 @@ function EditProject() {
         <input
           type="text"
           id="orderClientPrepay"
-          placeholder={currentOrder.clientPrepay}
+          placeholder={projectData.clientPrepay}
         />
       </FormBlock>
 
@@ -122,31 +167,106 @@ function EditProject() {
         <input
           type="text"
           id="orderClientDept"
-          placeholder={currentOrder.clientDept}
+          placeholder={projectData.clientDept}
         />
       </FormBlock>
 
-      {currentOrder.items.map((item, index) => (
-        <ItemsBlock>
-          <label htmlFor={item.name + index}>{index + 1}</label>
-          <input type="text" id={item.name + index} placeholder={item.name} />
+      {projectItems &&
+        projectItems.map((item, index) => (
+          <ItemsBlock>
+            <label htmlFor={item.name + index}>{index + 1}</label>
+            <input
+              type="text"
+              id={item.name + index}
+              placeholder={item.name}
+              onChange={(e) =>
+                setProjectItems(
+                  projectItems.map((el, i) => {
+                    if (el.id === item.id) {
+                      return { ...el, name: e.target.value };
+                    }
+                    return el;
+                  })
+                )
+              }
+            />
 
-          <input type="text" id={item.price + index} placeholder={item.price} />
-          <StyledButtonCheck>
-            <i className="fa fa-check" aria-hidden="true" />
-          </StyledButtonCheck>
-          <StyledButtonCross onClick={() => setCurrentItemId(item.id)}>
-            <i className="fa fa-times" aria-hidden="true" />
-          </StyledButtonCross>
-        </ItemsBlock>
-      ))}
+            <input
+              type="text"
+              id={item.price + index}
+              placeholder={item.price}
+              onChange={(e) =>
+                setProjectItems(
+                  projectItems.map((el, i) => {
+                    if (el.id === item.id) {
+                      return { ...el, price: Number(e.target.value) };
+                    }
+                    return el;
+                  })
+                )
+              }
+            />
+            <StyledButtonCheck
+              active={() => {
+                if (currentProjectItems.length !== projectItems.length) {
+                  refetch();
+                  return false;
+                }
+
+                const state =
+                  currentProjectItems[index].name !==
+                    projectItems[index].name ||
+                  currentProjectItems[index].price !==
+                    projectItems[index].price;
+                return state;
+              }}
+              onClick={async (e) => {
+                e.preventDefault();
+                setCurrentItem({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                });
+                console.log('currentItem', currentItem);
+                try {
+                  const res = await updateItem();
+                } catch (error) {
+                  console.log(error);
+                  refetch();
+                }
+                refetch();
+              }}
+            >
+              <i className="fa fa-check" aria-hidden="true" />
+            </StyledButtonCheck>
+            <StyledButtonCross
+              onClick={async (e) => {
+                e.preventDefault();
+                setCurrentItem({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                });
+                try {
+                  const res = await deleteItem();
+                } catch (error) {
+                  console.log(error);
+                  refetch();
+                }
+                refetch();
+              }}
+            >
+              <i className="fa fa-times" aria-hidden="true" />
+            </StyledButtonCross>
+          </ItemsBlock>
+        ))}
       <FormBlock>
         <AddItenButton
           type="button"
           onClick={async (e) => {
             e.preventDefault();
             const res = await createItem();
-            console.log('res', res);
+            refetch();
           }}
         >
           <FaIcons>
@@ -160,7 +280,8 @@ function EditProject() {
         <input
           type="text"
           id="orderExpence"
-          placeholder={currentOrder.expence}
+          placeholder={projectData.expence}
+          value={calculateExpense()}
         />
       </FormBlock>
 
@@ -169,7 +290,7 @@ function EditProject() {
         <input
           type="text"
           id="orderEarning"
-          placeholder={currentOrder.clientPrice - currentOrder.expence}
+          placeholder={projectData.clientPrice - projectData.expence}
         />
       </FormBlock>
 
@@ -178,7 +299,7 @@ function EditProject() {
         <input
           type="text"
           id="orderPersonalExpences"
-          placeholder={currentOrder.personalExpence}
+          placeholder={projectData.personalExpence}
         />
       </FormBlock>
     </FormContainer>
@@ -256,6 +377,11 @@ const StyledButtonCheck = styled.button`
   background-color: lightgreen;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   margin: 0.2rem;
+  display: ${(props) => {
+    console.log(props.active());
+    if (props.active()) return 'block';
+    return 'none';
+  }};
 `;
 
 const StyledButtonCross = styled.button`
