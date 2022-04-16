@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import Link from 'next/link';
 import styled from 'styled-components';
 
@@ -15,35 +15,84 @@ const ALL_ORDERS_LIST = gql`
   }
 `;
 
-function OrdersList() {
-  const { data, error, loading } = useQuery(ALL_ORDERS_LIST);
+const CREATE_NEW_ORDER = gql`
+  mutation CREATE_NEW_ORDER {
+    createOrder(
+      data: {
+        name: ""
+        description: ""
+        clientPrice: 0
+        clientPrepay: 0
+        clientDept: 0
+        expence: 0
+        interest: 0
+        personalExpence: 0
+        status: "PROGRESS"
+      }
+    ) {
+      name
+      description
+      clientPrice
+      clientPrepay
+      clientDept
+      expence
+      interest
+      personalExpence
+      status
+    }
+  }
+`;
 
-  console.log(data, error, loading);
+function OrdersList() {
+  const { data, error, loading, refetch } = useQuery(ALL_ORDERS_LIST);
+  const [
+    createOrder,
+    { data: orderData, error: orderError, loading: orderLoading },
+  ] = useMutation(CREATE_NEW_ORDER);
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
+
   return (
     <div>
       {data.allOrders.map((order) => (
-        <Link href={`edit/${order.id}`}>
-          <Order key={order.id}>
-            <div>{order.name}</div>
-            <div>{order.clientPrice}</div>
-            {order.status === 'PROGRESS' ? (
-              <FaIcons>
-                <i className="fa fa-truck" aria-hidden="true" />
-              </FaIcons>
-            ) : (
-              <FaIcons>
-                <i className="fa fa-check" aria-hidden="true" />
-              </FaIcons>
-            )}
-          </Order>
-        </Link>
+        <Order key={order.id}>
+          <div>
+            <Link href={`edit/${order.id}`}>{order.name}</Link>
+          </div>
+          <div>{order.clientPrice}</div>
+          {order.status === 'PROGRESS' ? (
+            <FaIcons>
+              <i className="fa fa-truck" aria-hidden="true" />
+            </FaIcons>
+          ) : (
+            <FaIcons>
+              <i className="fa fa-check" aria-hidden="true" />
+            </FaIcons>
+          )}
+          <StyledButtonCross
+            type="button"
+            onClick={()=>console.log('ORDER DELETED')}
+          >
+            {' '}
+            <i className="fa fa-times" aria-hidden="true" />
+          </StyledButtonCross>
+        </Order>
       ))}
-      <AddNew>
-        <Link href="/newOrder">
-          <i className="fa fa-plus" aria-hidden="true" />
-        </Link>
+      <AddNew
+        onClick={async (e) => {
+          e.preventDefault();
+
+          try {
+            const res = await createOrder();
+          } catch (error) {
+            console.log(error);
+            refetch();
+          }
+          refetch();
+        }}
+      >
+        <i className="fa fa-plus" aria-hidden="true" />
       </AddNew>
     </div>
   );
@@ -55,7 +104,7 @@ const Order = styled.div`
   width: 90%;
 
   display: grid;
-  grid-template-columns: 4fr 1fr 1fr;
+  grid-template-columns: 4fr 1fr 1fr 0.3fr;
   & div {
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
     padding: 1rem;
@@ -74,8 +123,9 @@ const FaIcons = styled.div`
   }
 `;
 
-const AddNew = styled.div`
+const AddNew = styled.button`
   position: relative;
+  border: none;
   width: 10rem;
   height: 4rem;
   margin-top: 0.2rem;
@@ -89,4 +139,10 @@ const AddNew = styled.div`
     left: 50%;
     transform: translate(-50%, -50%);
   }
+`;
+const StyledButtonCross = styled.button`
+  border: none;
+  background-color: lightcoral;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0.2rem;
 `;

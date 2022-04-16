@@ -29,8 +29,32 @@ const ORDER_DETAILS = gql`
 `;
 
 const CREATE_NEW_ITEM = gql`
-  mutation CREATE_NEW_ITEM($id: ID!) {
-    createItem(data: { name: "", price: 0, order: { connect: { id: $id } } }) {
+  mutation CREATE_NEW_ITEM(
+    $id: ID!
+    $name: String
+    $price: Int
+    $status: String
+  ) {
+    createItem(
+      data: {
+        name: $name
+        price: $price
+        status: $status
+        order: { connect: { id: $id } }
+      }
+    ) {
+      name
+      price
+      order {
+        id
+      }
+    }
+  }
+`;
+
+const CREATE_NEW_ITEMS = gql`
+  mutation CREATE_NEW_ITEMS($items: [ItemsCreateInput]) {
+    createItems(data: $items) {
       name
       price
       order {
@@ -41,8 +65,8 @@ const CREATE_NEW_ITEM = gql`
 `;
 
 const UPDATE_ITEM = gql`
-  mutation UPDATE_ITEM($id: ID!, $name: String, $price: Int) {
-    updateItem(id: $id, data: { name: $name, price: $price }) {
+  mutation UPDATE_ITEM($id: ID!, $name: String, $price: Int, $status: String) {
+    updateItem(id: $id, data: { name: $name, price: $price, status: $status }) {
       id
       name
       price
@@ -50,9 +74,44 @@ const UPDATE_ITEM = gql`
   }
 `;
 
-const DELETE_ITEM = gql`
-  mutation DELETE_ITEM($id: ID!) {
-    deleteItem(id: $id) {
+const UPDATE_ORDER = gql`
+  mutation UPDATE_ORDER(
+    $id: ID!
+    $name: String
+    $clientPrice: Int
+    $clientPrepay: Int
+    $clientDept: Int
+    $expence: Int
+    $interest: Int
+    $personalExpence: Int
+  ) {
+    updateOrder(
+      id: $id
+      data: {
+        name: $name
+        clientPrice: $clientPrice
+        clientPrepay: $clientPrepay
+        clientDept: $clientDept
+        expence: $expence
+        interest: $interest
+        personalExpence: $personalExpence
+      }
+    ) {
+      id
+      name
+      clientPrice
+      clientPrepay
+      clientDept
+      expence
+      interest
+      personalExpence
+    }
+  }
+`;
+
+const DELETE_ITEMS = gql`
+  mutation DELETE_ITEMS($ids: [ID!]) {
+    deleteItems(ids: $ids) {
       id
     }
   }
@@ -68,116 +127,204 @@ function EditProject() {
     price: 0,
     id: '',
   });
+  const [currentItemsIds, setCurrentItemsIds] = useState([]);
+  const [newItemsToSave, setNewItemsToSave] = useState([
+    { data: { name: 'Test' } },
+  ]);
 
-  console.log('projectItems', projectItems);
+  const newItemsId = 0;
 
   console.log(projectId);
+
   const { data, error, loading, refetch } = useQuery(ORDER_DETAILS, {
     variables: { id: projectId },
   });
 
   const [
-    createItem,
-    { data: itemData, error: itemError, loading: itemLoading },
-  ] = useMutation(CREATE_NEW_ITEM, {
-    variables: { id: projectId },
+    createItems,
+    { data: itemsData, error: itemsError, loading: itemsLoading },
+  ] = useMutation(CREATE_NEW_ITEMS, {
+    variables: { items: newItemsToSave },
   });
 
   const [
-    updateItem,
-    {
-      data: itemUpdateData,
-      error: itemUpdateError,
-      loading: itemUpdateLoading,
-    },
-  ] = useMutation(UPDATE_ITEM, {
-    variables: {
-      id: currentItem.id,
-      name: currentItem.name,
-      price: currentItem.price,
-    },
-  });
-
-  const [
-    deleteItem,
+    deleteItems,
     {
       data: itemDeleteData,
       error: itemDeleteError,
       loading: itemDeleteLoading,
     },
-  ] = useMutation(DELETE_ITEM, {
-    variables: { id: currentItem.id },
+  ] = useMutation(DELETE_ITEMS, {
+    variables: { ids: currentItemsIds },
   });
+
+  const [
+    updateOrder,
+    {
+      data: orderUpdateData,
+      error: orderUpdateError,
+      loading: orderUpdateLoading,
+    },
+  ] = useMutation(UPDATE_ORDER, {
+    variables: {
+      id: projectId,
+      name: projectData.name,
+      clientPrice: Number(projectData.clientPrice),
+      clientPrepay: Number(projectData.clientPrepay),
+      clientDept: Number(projectData.clientDept),
+      expence: Number(projectData.expence),
+      interest: Number(projectData.interest),
+      personalExpence: Number(projectData.personalExpence),
+    },
+  });
+
+  const calculateExpence = () => {
+    console.log('items', projectItems);
+    if (projectItems) {
+      return projectItems.reduce((acc, item) => Number(acc + item.price), 0);
+    }
+  };
+
+  const submitNewOrder = async (e) => {
+    e.preventDefault();
+    if (data.Order.items) {
+      try {
+        const itemsDelete = await deleteItems();
+        console.log('res', itemsDelete);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    setNewItemsToSave(
+      projectItems.map((item) => ({
+        data: {
+          name: item.name,
+          price: item.price,
+          status: item.status,
+          order: { connect: { id: projectId } },
+        },
+      }))
+    );
+    console.log('newItemsToSave', newItemsToSave);
+    setProjectData({ ...projectData, expence: calculateExpence() });
+
+    try {
+      const itemsUpdate = await createItems();
+      console.log('itemsUpdate', itemsUpdate);
+    } catch (error) {
+      console.log(error);
+    }
+
+    try {
+      const orderUpdate = await updateOrder();
+      console.log('orderUpdate', orderUpdate);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     if (loading) return <p>...грууузимся</p>;
     if (error) return null;
     if (!data) return null;
-    setProjectData(data.Order);
+    setProjectData({
+      ...data.Order,
+      expence: calculateExpence(),
+    });
     setProjectItems(data.Order.items);
-  }, [data]);
+    setCurrentItemsIds(data.Order.items.map((item) => item.id));
+  }, []);
 
   if (loading) return <p>...грууузимся</p>;
   if (error) return null;
   if (!data) return null;
-  const currentProjectItems = data.Order.items;
-  console.log('base', currentProjectItems);
-  console.log('state', projectItems);
-  const calculateExpense = () => {
-    if (projectItems) {
-      return projectItems.reduce((acc, item) => acc + item.price, 0);
-    }
-  };
+
+  console.log('state', projectData);
+
   return (
-    <FormContainer onChange={() => setProjectData(projectData)}>
+    <FormContainer>
       <FormBlock>
         <label htmlFor="orderName">Заказ</label>
-        <input type="text" id="orderName" placeholder={projectData.name} />
+        <input
+          type="text"
+          id="orderName"
+          value={projectData.name}
+          onChange={(e) => {
+            console.log(e.target.value);
+            setProjectData({ ...projectData, name: e.target.value });
+          }}
+        />
 
-        {projectData.status === 'PROGRESS' ? (
-          <FaIcons>
-            <i className="fa fa-cogs" aria-hidden="true" />
-          </FaIcons>
-        ) : (
-          <FaIcons>
-            <i className="fa fa-check" aria-hidden="true" />
-          </FaIcons>
-        )}
+        <ProjectStatusButton
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            if (projectData.status === 'DONE') {
+              setProjectData({ ...projectData, status: 'PROGRESS' });
+            } else setProjectData({ ...projectData, status: 'DONE' });
+          }}
+        >
+          {projectData.status === 'PROGRESS' ? (
+            <FaIcons>
+              <i className="fa fa-cogs" aria-hidden="true" />
+            </FaIcons>
+          ) : (
+            <FaIcons>
+              <i className="fa fa-check" aria-hidden="true" />
+            </FaIcons>
+          )}
+        </ProjectStatusButton>
       </FormBlock>
       <FormBlock>
         <label htmlFor="orderClientPrice">Стоимость</label>
         <input
-          type="text"
+          type="number"
           id="orderClientPrice"
           placeholder={projectData.clientPrice}
+          value={projectData.clientPrice}
+          onChange={(e) => {
+            console.log(e.target.value);
+            setProjectData({ ...projectData, clientPrice: e.target.value });
+          }}
         />
       </FormBlock>
 
       <FormBlock>
         <label htmlFor="orderClientPrepay">Аванс</label>
         <input
-          type="text"
+          type="number"
           id="orderClientPrepay"
           placeholder={projectData.clientPrepay}
+          value={projectData.clientPrepay}
+          onChange={(e) => {
+            console.log(e.target.value);
+            setProjectData({ ...projectData, clientPrepay: e.target.value });
+          }}
         />
       </FormBlock>
 
       <FormBlock>
         <label htmlFor="orderСlientDept">Клиент должен</label>
         <input
-          type="text"
-          id="orderClientDept"
+          type="number"
+          id="orderСlientDept"
           placeholder={projectData.clientDept}
+          value={projectData.clientDept}
+          onChange={(e) => {
+            console.log(e.target.value);
+            setProjectData({ ...projectData, clientDept: e.target.value });
+          }}
         />
       </FormBlock>
 
       {projectItems &&
         projectItems.map((item, index) => (
           <ItemsBlock>
-            <label htmlFor={item.name + index}>{index + 1}</label>
+            <label htmlFor={item.id}>{index + 1}</label>
             <input
               type="text"
-              id={item.name + index}
+              id={item.id}
               placeholder={item.name}
               onChange={(e) =>
                 setProjectItems(
@@ -192,10 +339,10 @@ function EditProject() {
             />
 
             <input
-              type="text"
-              id={item.price + index}
+              type="number"
+              id={item.id}
               placeholder={item.price}
-              onChange={(e) =>
+              onChange={(e) => {
                 setProjectItems(
                   projectItems.map((el, i) => {
                     if (el.id === item.id) {
@@ -203,42 +350,42 @@ function EditProject() {
                     }
                     return el;
                   })
-                )
-              }
-            />
-            <StyledButtonCheck
-              active={() => {
-                if (currentProjectItems.length !== projectItems.length) {
-                  refetch();
-                  return false;
-                }
-
-                const state =
-                  currentProjectItems[index].name !==
-                    projectItems[index].name ||
-                  currentProjectItems[index].price !==
-                    projectItems[index].price;
-                return state;
-              }}
-              onClick={async (e) => {
-                e.preventDefault();
-                setCurrentItem({
-                  id: item.id,
-                  name: item.name,
-                  price: item.price,
+                );
+                setProjectData({
+                  ...projectData,
+                  expence: calculateExpence(),
                 });
-                console.log('currentItem', currentItem);
-                try {
-                  const res = await updateItem();
-                } catch (error) {
-                  console.log(error);
-                  refetch();
-                }
-                refetch();
+              }}
+            />
+
+            <StatusButton
+              type="button"
+              id={item.id}
+              onClick={(e) => {
+                e.preventDefault();
+                if (item.status === 'MAX') {
+                  setProjectItems(
+                    projectItems.map((el, i) => {
+                      if (el.id === item.id) {
+                        return { ...el, status: 'SERG' };
+                      }
+                      return el;
+                    })
+                  );
+                } else
+                  setProjectItems(
+                    projectItems.map((el, i) => {
+                      if (el.id === item.id) {
+                        return { ...el, status: 'MAX' };
+                      }
+                      return el;
+                    })
+                  );
               }}
             >
-              <i className="fa fa-check" aria-hidden="true" />
-            </StyledButtonCheck>
+              {item.status}
+            </StatusButton>
+
             <StyledButtonCross
               onClick={async (e) => {
                 e.preventDefault();
@@ -247,13 +394,8 @@ function EditProject() {
                   name: item.name,
                   price: item.price,
                 });
-                try {
-                  const res = await deleteItem();
-                } catch (error) {
-                  console.log(error);
-                  refetch();
-                }
-                refetch();
+
+                setProjectItems(projectItems.filter((i) => i !== item));
               }}
             >
               <i className="fa fa-times" aria-hidden="true" />
@@ -261,36 +403,45 @@ function EditProject() {
           </ItemsBlock>
         ))}
       <FormBlock>
-        <AddItenButton
+        <AddItemButton
           type="button"
           onClick={async (e) => {
             e.preventDefault();
-            const res = await createItem();
-            refetch();
+            setProjectItems([
+              ...projectItems,
+              {
+                id: Math.floor(Math.random() * 100),
+                name: '',
+                price: 0,
+                status: 'MAX',
+              },
+            ]);
+            console.log(projectItems);
           }}
         >
           <FaIcons>
             <i className="fa fa-plus" aria-hidden="true" />
           </FaIcons>
-        </AddItenButton>
+        </AddItemButton>
       </FormBlock>
 
       <FormBlock>
         <label htmlFor="orderExpence">Затраты</label>
         <input
-          type="text"
+          type="number"
           id="orderExpence"
-          placeholder={projectData.expence}
-          value={calculateExpense()}
+          placeholder={calculateExpence()}
+          value={calculateExpence()}
         />
       </FormBlock>
 
       <FormBlock>
         <label htmlFor="orderEarning">Остаток</label>
         <input
-          type="text"
+          type="number"
           id="orderEarning"
-          placeholder={projectData.clientPrice - projectData.expence}
+          placeholder={+projectData.clientPrice - calculateExpence()}
+          value={+projectData.clientPrice - calculateExpence()}
         />
       </FormBlock>
 
@@ -302,6 +453,12 @@ function EditProject() {
           placeholder={projectData.personalExpence}
         />
       </FormBlock>
+
+      <AddOrderButton type="submit" onClick={(e) => submitNewOrder(e)}>
+        <FaIcons>
+          <i className="fa fa-floppy-o" aria-hidden="true" />
+        </FaIcons>
+      </AddOrderButton>
     </FormContainer>
   );
 }
@@ -330,6 +487,7 @@ const FormBlock = styled.div`
     margin: 0.2rem;
     background-color: lightgray;
   }
+
   & input {
     width: 10rem;
     margin: 0.2rem;
@@ -367,21 +525,18 @@ const ItemsBlock = styled.div`
   }
 `;
 
+const AddOrderButton = styled.button`
+  border: none;
+  width: 20.4rem;
+  background-color: lightblue;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0.2rem;
+  height: 4rem;
+`;
+
 const FormContainer = styled.form`
   display: flex;
   flex-direction: column;
-`;
-
-const StyledButtonCheck = styled.button`
-  border: none;
-  background-color: lightgreen;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
-  margin: 0.2rem;
-  display: ${(props) => {
-    console.log(props.active());
-    if (props.active()) return 'block';
-    return 'none';
-  }};
 `;
 
 const StyledButtonCross = styled.button`
@@ -391,10 +546,27 @@ const StyledButtonCross = styled.button`
   margin: 0.2rem;
 `;
 
-const AddItenButton = styled.button`
+const StatusButton = styled.button`
+  border: none;
+  width: 4rem;
+  background-color: lightgreen;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin: 0.2rem;
+`;
+const AddItemButton = styled.button`
   border: none;
   width: 10rem;
   background-color: lightblue;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 0;
+  margin: 0.2rem;
+`;
+
+const ProjectStatusButton = styled.button`
+  border: none;
+
+  background-color: lightgreen;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 0;
   margin: 0.2rem;
 `;
