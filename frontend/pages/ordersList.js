@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/client';
 import Link from 'next/link';
 import styled from 'styled-components';
+import { useState } from 'react';
 
 const ALL_ORDERS_LIST = gql`
   query ALL_ORDERS_LIST {
@@ -15,11 +16,19 @@ const ALL_ORDERS_LIST = gql`
   }
 `;
 
+const DELETE_ORDER = gql`
+  mutation DELETE_ORDER($id: ID!) {
+    deleteOrder(id: $id) {
+      id
+    }
+  }
+`;
+
 const CREATE_NEW_ORDER = gql`
   mutation CREATE_NEW_ORDER {
     createOrder(
       data: {
-        name: ""
+        name: "Новый заказ"
         description: ""
         clientPrice: 0
         clientPrepay: 0
@@ -44,11 +53,23 @@ const CREATE_NEW_ORDER = gql`
 `;
 
 function OrdersList() {
+  const [selectedOrderId, setSelectedOrderId] = useState({ id: '' });
   const { data, error, loading, refetch } = useQuery(ALL_ORDERS_LIST);
   const [
     createOrder,
     { data: orderData, error: orderError, loading: orderLoading },
   ] = useMutation(CREATE_NEW_ORDER);
+
+  const [
+    deleteOrder,
+    {
+      data: deleteOrderData,
+      error: deleteOrderError,
+      loading: deleteOrderLoading,
+    },
+  ] = useMutation(DELETE_ORDER, {
+    variables: { id: selectedOrderId.id },
+  });
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -72,7 +93,20 @@ function OrdersList() {
           )}
           <StyledButtonCross
             type="button"
-            onClick={()=>console.log('ORDER DELETED')}
+            onClick={async (e) => {
+              setSelectedOrderId({ id: order.id });
+              if (selectedOrderId.id === order.id) {
+                console.log('selectedOrderId', selectedOrderId.id);
+                e.preventDefault();
+                try {
+                  const res = await deleteOrder();
+                } catch (error) {
+                  console.log(error);
+                  refetch();
+                }
+                refetch();
+              }
+            }}
           >
             {' '}
             <i className="fa fa-times" aria-hidden="true" />
