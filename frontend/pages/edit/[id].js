@@ -84,6 +84,7 @@ const UPDATE_ORDER = gql`
     $expence: Int
     $interest: Int
     $personalExpence: Int
+    $status: String
   ) {
     updateOrder(
       id: $id
@@ -95,6 +96,7 @@ const UPDATE_ORDER = gql`
         expence: $expence
         interest: $interest
         personalExpence: $personalExpence
+        status: $status
       }
     ) {
       id
@@ -105,6 +107,7 @@ const UPDATE_ORDER = gql`
       expence
       interest
       personalExpence
+      status
     }
   }
 `;
@@ -131,6 +134,23 @@ function EditProject() {
   const [newItemsToSave, setNewItemsToSave] = useState([
     { data: { name: 'Test' } },
   ]);
+
+  const calculateExpenceSergey = () => {
+    if (projectItems) {
+      return projectItems.reduce((acc, item) => {
+        if (item.status === 'SERG') {
+          return Number(acc + item.price);
+        }
+        return acc;
+      }, 0);
+    }
+  };
+
+  const calculateExpence = () => {
+    if (projectItems) {
+      return projectItems.reduce((acc, item) => Number(acc + item.price), 0);
+    }
+  };
 
   const newItemsId = 0;
 
@@ -171,19 +191,13 @@ function EditProject() {
       name: projectData.name,
       clientPrice: Number(projectData.clientPrice),
       clientPrepay: Number(projectData.clientPrepay),
-      clientDept: Number(projectData.clientDept),
-      expence: Number(projectData.expence),
+      clientDept: Number(projectData.clientPrice - projectData.clientPrepay),
+      expence: calculateExpence(),
       interest: Number(projectData.interest),
-      personalExpence: Number(projectData.personalExpence),
+      personalExpence: calculateExpenceSergey(),
+      status: projectData.status,
     },
   });
-
-  const calculateExpence = () => {
-    console.log('items', projectItems);
-    if (projectItems) {
-      return projectItems.reduce((acc, item) => Number(acc + item.price), 0);
-    }
-  };
 
   const submitNewOrder = async (e) => {
     e.preventDefault();
@@ -263,6 +277,7 @@ function EditProject() {
             if (projectData.status === 'DONE') {
               setProjectData({ ...projectData, status: 'PROGRESS' });
             } else setProjectData({ ...projectData, status: 'DONE' });
+            console.log('projectData', projectData);
           }}
         >
           {projectData.status === 'PROGRESS' ? (
@@ -285,7 +300,11 @@ function EditProject() {
           value={projectData.clientPrice}
           onChange={(e) => {
             console.log(e.target.value);
-            setProjectData({ ...projectData, clientPrice: e.target.value });
+            setProjectData({
+              ...projectData,
+              clientPrice: e.target.value,
+              clientDept: Number(e.target.value - projectData.clientPrepay),
+            });
           }}
         />
       </FormBlock>
@@ -299,7 +318,11 @@ function EditProject() {
           value={projectData.clientPrepay}
           onChange={(e) => {
             console.log(e.target.value);
-            setProjectData({ ...projectData, clientPrepay: e.target.value });
+            setProjectData({
+              ...projectData,
+              clientPrepay: e.target.value,
+              clientDept: Number(projectData.clientPrice - e.target.value),
+            });
           }}
         />
       </FormBlock>
@@ -309,11 +332,15 @@ function EditProject() {
         <input
           type="number"
           id="orderСlientDept"
-          placeholder={projectData.clientDept}
+          placeholder={projectData.clientPrice - projectData.clientPrepay}
           value={projectData.clientDept}
           onChange={(e) => {
-            console.log(e.target.value);
-            setProjectData({ ...projectData, clientDept: e.target.value });
+            setProjectData({
+              ...projectData,
+              clientDept: Number(
+                projectData.clientPrice - projectData.clientPrepay
+              ),
+            });
           }}
         />
       </FormBlock>
@@ -354,6 +381,7 @@ function EditProject() {
                 setProjectData({
                   ...projectData,
                   expence: calculateExpence(),
+                  personalExpence: calculateExpenceSergey(),
                 });
               }}
             />
@@ -381,6 +409,12 @@ function EditProject() {
                       return el;
                     })
                   );
+                console.log('projectItems', projectItems);
+                console.log('calculateExpenceSergey', calculateExpenceSergey());
+                setProjectData({
+                  ...projectData,
+                  personalExpence: calculateExpenceSergey(),
+                });
               }}
             >
               {item.status}
@@ -446,11 +480,12 @@ function EditProject() {
       </FormBlock>
 
       <FormBlock>
-        <label htmlFor="orderPersonalExpences">Личные Затраты</label>
+        <label htmlFor="orderPersonalExpences">Личные Затраты Сергей</label>
         <input
-          type="text"
+          type="number"
           id="orderPersonalExpences"
           placeholder={projectData.personalExpence}
+          value={calculateExpenceSergey()}
         />
       </FormBlock>
 

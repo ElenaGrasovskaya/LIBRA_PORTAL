@@ -25,7 +25,7 @@ const DELETE_ORDER = gql`
 `;
 
 const CREATE_NEW_ORDER = gql`
-  mutation CREATE_NEW_ORDER {
+  mutation CREATE_NEW_ORDER($date: String) {
     createOrder(
       data: {
         name: "Новый заказ"
@@ -37,6 +37,7 @@ const CREATE_NEW_ORDER = gql`
         interest: 0
         personalExpence: 0
         status: "PROGRESS"
+        dateCreated: $date
       }
     ) {
       name
@@ -48,17 +49,20 @@ const CREATE_NEW_ORDER = gql`
       interest
       personalExpence
       status
+      dateCreated
     }
   }
 `;
 
 function OrdersList() {
+  const currentDate = new Date();
+
   const [selectedOrderId, setSelectedOrderId] = useState({ id: '' });
   const { data, error, loading, refetch } = useQuery(ALL_ORDERS_LIST);
   const [
     createOrder,
     { data: orderData, error: orderError, loading: orderLoading },
-  ] = useMutation(CREATE_NEW_ORDER);
+  ] = useMutation(CREATE_NEW_ORDER, { variables: { date: currentDate } });
 
   const [
     deleteOrder,
@@ -113,21 +117,23 @@ function OrdersList() {
           </StyledButtonCross>
         </Order>
       ))}
-      <AddNew
-        onClick={async (e) => {
-          e.preventDefault();
+      <Order>
+        <AddNew
+          onClick={async (e) => {
+            e.preventDefault();
 
-          try {
-            const res = await createOrder();
-          } catch (error) {
-            console.log(error);
+            try {
+              const res = await createOrder();
+            } catch (error) {
+              console.log(error);
+              refetch();
+            }
             refetch();
-          }
-          refetch();
-        }}
-      >
-        <i className="fa fa-plus" aria-hidden="true" />
-      </AddNew>
+          }}
+        >
+          <i className="fa fa-plus" aria-hidden="true" />
+        </AddNew>
+      </Order>
     </div>
   );
 }
@@ -160,7 +166,6 @@ const FaIcons = styled.div`
 const AddNew = styled.button`
   position: relative;
   border: none;
-  width: 10rem;
   height: 4rem;
   margin-top: 0.2rem;
   margin-left: 0.1rem;
