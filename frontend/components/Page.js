@@ -65,11 +65,10 @@ function Page({ children }) {
 }
 
 export default Page;
-/*
+
 Page.propTypes = {
   children: PropTypes.oneOf([
     PropTypes.arrayOf(PropTypes.node),
     PropTypes.node,
   ]),
 };
-*/

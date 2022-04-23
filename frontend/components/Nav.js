@@ -1,12 +1,20 @@
 import Link from 'next/link';
 import styled from 'styled-components';
+import { useUser } from './User';
 
 export default function Nav() {
+  const user = useUser();
+  console.log('user', user);
   return (
     <Navigation>
-      <Link href="/ordersList">Заказы</Link>
-
-      <Link href="/calc">Рассчеты</Link>
+      {user && (
+        <>
+          {user.name}
+          <Link href="/ordersList">Заказы</Link>
+          <Link href="/calc">Рассчеты</Link>
+        </>
+      )}
+      {!user && <Link href="/signin">Войти</Link>}
     </Navigation>
   );
 }

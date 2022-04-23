@@ -201,10 +201,13 @@ function EditProject() {
 
   const submitNewOrder = async (e) => {
     e.preventDefault();
+    let itemsDelete = false;
+    let itemsCreate = false;
+    let orderUpdate = false;
     if (data.Order.items) {
       try {
-        const itemsDelete = await deleteItems();
-        console.log('res', itemsDelete);
+        itemsDelete = await deleteItems();
+        console.log('itemsDelete', itemsDelete);
       } catch (error) {
         console.log(error);
       }
@@ -223,19 +226,23 @@ function EditProject() {
     console.log('newItemsToSave', newItemsToSave);
     setProjectData({ ...projectData, expence: calculateExpence() });
 
-    try {
-      const itemsUpdate = await createItems();
-      console.log('itemsUpdate', itemsUpdate);
-    } catch (error) {
-      console.log(error);
-    }
+    if (itemsDelete)
+      try {
+        itemsCreate = await createItems();
+        console.log('itemsUpdate', itemsCreate);
+      } catch (error) {
+        console.log(error);
+      }
 
-    try {
-      const orderUpdate = await updateOrder();
-      console.log('orderUpdate', orderUpdate);
-    } catch (error) {
-      console.log(error);
-    }
+    if (itemsCreate)
+      try {
+        orderUpdate = await updateOrder();
+        console.log('orderUpdate', orderUpdate);
+      } catch (error) {
+        console.log(error);
+      }
+
+    if (orderUpdate) refetch();
   };
 
   useEffect(() => {
