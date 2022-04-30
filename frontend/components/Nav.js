@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import styled from 'styled-components';
+import SignOut from './SignOut';
 import { useUser } from './User';
 
 export default function Nav() {
@@ -12,6 +13,7 @@ export default function Nav() {
           {user.name}
           <Link href="/ordersList">Заказы</Link>
           <Link href="/calc">Рассчеты</Link>
+          <SignOut />
         </>
       )}
       {!user && <Link href="/signin">Войти</Link>}
@@ -25,7 +27,8 @@ const Navigation = styled.nav`
   flex-direction: row;
   gap: 1rem;
 
-  & a {
+  & a,
+  button {
     background: #666;
     font-size: 1.2rem;
     color: white;
@@ -34,5 +37,6 @@ const Navigation = styled.nav`
     text-decoration: none;
     text-transform: uppercase;
     padding: 0.2rem 0.5rem;
+    border: 0;
   }
 `;
