@@ -11,7 +11,7 @@ import {
 } from '@keystone-next/keystone/session';
 
 const databaseURL =
-  process.env.DATABASE_URL || 'mongodb://localhost/libraportal';
+  process.env.DATABASE_URL || 'mongodb://localho st/libraportal';
 const sessionConfig = {
   maxAge: 60 * 60 * 24 * 360, // How long should they stay signed in
   secret: process.env.COOKIE_SECRET,

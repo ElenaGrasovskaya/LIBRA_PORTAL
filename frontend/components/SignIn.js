@@ -1,6 +1,7 @@
 import React from 'react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/client';
+import { useRouter } from 'next/router';
 import Form from './styles/Form';
 import useForm from '../lib/useForm';
 import { CURRENT_USER_QUERY } from './User';
@@ -29,6 +30,7 @@ export default function SignIn() {
     email: '',
     password: '',
   });
+  const router = useRouter();
   const [signin, { data, loading }] = useMutation(SIGNIN_MUTATION, {
     variables: inputs,
     // refetch the currently logged in user
@@ -39,6 +41,7 @@ export default function SignIn() {
     console.log('inputs', inputs);
     const signinData = await signin();
     console.log('signinData', signinData);
+    router.push('/ordersList');
   };
   const error =
     data?.authenticateUserWithPassword.__typename ===
