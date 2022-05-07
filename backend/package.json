@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "keystone-next",
     "seed-data": "keystone-next --seed-data",
-    "build": "keystone-next build",
-    "start": "keystone-next start"
+    "build": "keystone-next --openssl-legacy-provider build",
+    "start": "keystone-next --openssl-legacy-provider start"
   },
   "babel": {
     "presets": [
