@@ -13,5 +13,7 @@ module.exports = {
       apollo: {},
     }),
     new AdminUIApp(),
+    new StaticApp({path:"/", src:'public'}), // for your static site
   ],
+
 };
