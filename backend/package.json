@@ -5,10 +5,10 @@
   "author": "ElenaGrasovskaya",
   "license": "MIT",
   "scripts": {
-    "dev": "keystone-next",
-    "seed-data": "keystone-next --seed-data",
-    "build": "keystone-next build",
-    "start": "keystone-next start"
+    "dev": "keystone-next --openssl-legacy-provider",
+    "seed-data": "keystone-next --openssl-legacy-provider --seed-data",
+    "build": "keystone-next --openssl-legacy-provider build",
+    "start": "keystone-next --openssl-legacy-provider start"
   },
   "babel": {
     "presets": [
