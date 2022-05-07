@@ -2,29 +2,16 @@ const { Keystone } = require('@keystonejs/keystone');
 const { GraphQLApp } = require('@keystonejs/app-graphql');
 const { AdminUIApp } = require('@keystonejs/app-admin-ui');
 
-const keystone = new Keystone({...});
-
-const authStrategy = keystone.createAuthStrategy({...});
-
 module.exports = {
-  keystone,
+  keystone: new Keystone(),
   apps: [
-    new GraphQLApp(),
-    new AdminUIApp({
-      adminPath: '/admin',
-      authStrategy,
+    new GraphQLApp({
+      // All config keys are optional. Default values are shown here for completeness.
+      apiPath: '/admin/api',
+      graphiqlPath: '/admin/graphiql',
+      schemaName: 'admin',
+      apollo: {},
     }),
+    new AdminUIApp(),
   ],
-};
-
-const { NextApp } = require('@keystonejs/app-next');
-
-module.exports = {
-  keystone,
-  apps: [
-    new GraphQLApp(),
-    new AdminUIApp({ enableDefaultRoute: false }),
-    new NextApp({ dir: './frontend' }),
-  ]
-  
 };

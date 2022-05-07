@@ -4,24 +4,24 @@ import { KeystoneProvider } from '@keystone-next/admin-ui/context';
 import { ErrorBoundary } from '@keystone-next/admin-ui/components';
 import { Core } from '@keystone-ui/core';
 
-import * as view1b1b4fbf from '../../../node_modules/@keystone-next/fields/types/mongoId/views';
-import * as view9433729b from '../../../node_modules/@keystone-next/fields/types/text/views';
-import * as viewf8d84945 from '../../../node_modules/@keystone-next/fields/types/password/views';
-import * as view82fb5eff from '../../../node_modules/@keystone-next/fields/types/relationship/views';
-import * as view68459eed from '../../../node_modules/@keystone-next/fields/types/timestamp/views';
-import * as view8d284c4d from '../../../node_modules/@keystone-next/fields/types/select/views';
-import * as view63dda7fb from '../../../node_modules/@keystone-next/fields/types/integer/views';
+import * as view5049d804 from '../../../node_modules/@keystone-next/fields/types/mongoId/views';
+import * as view63b6e574 from '../../../node_modules/@keystone-next/fields/types/text/views';
+import * as view491b8532 from '../../../node_modules/@keystone-next/fields/types/password/views';
+import * as view2238e220 from '../../../node_modules/@keystone-next/fields/types/relationship/views';
+import * as view38561920 from '../../../node_modules/@keystone-next/fields/types/timestamp/views';
+import * as viewd39a4105 from '../../../node_modules/@keystone-next/fields/types/select/views';
+import * as viewf6b8fd3b from '../../../node_modules/@keystone-next/fields/types/integer/views';
 
 const adminConfig = {};
 
 const fieldViews = {
-  view1b1b4fbf,
-  view9433729b,
-  viewf8d84945,
-  view82fb5eff,
-  view68459eed,
-  view8d284c4d,
-  view63dda7fb,
+  view5049d804,
+  view63b6e574,
+  view491b8532,
+  view2238e220,
+  view38561920,
+  viewd39a4105,
+  viewf6b8fd3b,
 };
 
 const lazyMetadataQuery = {
@@ -196,7 +196,7 @@ export default function App({ Component, pageProps }) {
     <Core>
       <KeystoneProvider
         adminConfig={adminConfig}
-        adminMetaHash="yhh7em"
+        adminMetaHash="vpf5mt"
         fieldViews={fieldViews}
         lazyMetadataQuery={lazyMetadataQuery}
       >
