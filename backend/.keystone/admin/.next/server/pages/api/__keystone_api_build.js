@@ -306,7 +306,10 @@ const {
   server: {
     cors: {
       origin: [process.env.FRONTEND_URL, "*"],
-      credentials: true
+      credentials: true,
+      methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+      preflightContinue: true,
+      allowedHeaders: "*"
     }
   },
   db: {
