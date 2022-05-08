@@ -15,5 +15,21 @@ module.exports = {
     new AdminUIApp(),
     new StaticApp({path:"/", src:'public'}), // for your static site
   ],
+  
 
 };
+
+app.use('*', function (req, res, next) {
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-XSRF-TOKEN');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Method', 'GET,POST,PUT,DELETE');
+  res.header('Access-Control-Allow-Credentials', true);
+  next();
+});
+app.options('*', function (req, res) {
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-XSRF-TOKEN');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Method', 'GET,POST,PUT,DELETE');
+  res.header('Access-Control-Allow-Credentials', true);
+  res.sendStatus(200);
+});
