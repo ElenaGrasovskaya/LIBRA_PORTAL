@@ -31,12 +31,12 @@ export default withAuth(
   config({
     server: {
       cors: {
-        origin: ["*"],
+        origin: [process.env.FRONTEND_URL],
         credentials: true,
-        methods:"GET,HEAD,PUT,PATCH,POST,DELETE",
+        methods:"GET,HEAD,PUT,PATCH,POST,DELETE,FETCH",
         preflightContinue: true,
         allowedHeaders: "*",
-
+       
       },
     },
     db: {
