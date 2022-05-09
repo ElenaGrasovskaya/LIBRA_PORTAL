@@ -31,9 +31,9 @@ export default withAuth(
   config({
     server: {
       cors: {
-        origin: ["*"],
+        origin: [process.env.FRONTEND_URL, process.env.FRONTEND_URL+"/signin", process.env.FRONTEND_URL+"/", "http://localhost:7777/"],
         credentials: true,
-        methods:"GET,HEAD,PUT,PATCH,POST,DELETE,FETCH",
+        methods:"GET,HEAD,PUT,PATCH,POST,DELETE,FETCH,OPTION",
         preflightContinue: true,
         allowedHeaders: ['Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Request-With'],
        
