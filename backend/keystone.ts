@@ -34,7 +34,7 @@ export default withAuth(
         origin: [process.env.FRONTEND_URL, process.env.FRONTEND_URL+"/signin", process.env.FRONTEND_URL+"/", "http://localhost:7777/"],
         credentials: true,
         methods:"GET,HEAD,PUT,PATCH,POST,DELETE,FETCH,OPTION",
-        allowedHeaders: ['Access-Control-Allow-Headers: *'],
+        allowedHeaders: ['Access-Control-Allow-Headers: origin,content-type,accept,authorization,x-requested-with'],
        
       },
     },
