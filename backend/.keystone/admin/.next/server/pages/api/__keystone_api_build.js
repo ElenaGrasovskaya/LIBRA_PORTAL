@@ -309,7 +309,7 @@ const {
       credentials: true,
       methods: "GET,HEAD,PUT,PATCH,POST,DELETE,FETCH",
       preflightContinue: true,
-      allowedHeaders: "*"
+      allowedHeaders: ['Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-Request-With']
     }
   },
   db: {
