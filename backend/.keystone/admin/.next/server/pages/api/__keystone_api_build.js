@@ -305,7 +305,7 @@ const {
 /* harmony default export */ var keystone = (withAuth(Object(schema_["config"])({
   server: {
     cors: {
-      origin: [process.env.FRONTEND_URL],
+      origin: ["*"],
       credentials: true,
       methods: "GET,HEAD,PUT,PATCH,POST,DELETE,FETCH",
       preflightContinue: true,
