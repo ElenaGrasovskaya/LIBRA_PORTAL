@@ -31,10 +31,11 @@ export default withAuth(
   config({
     server: {
       cors: {
-        origin: [process.env.FRONTEND_URL+":8080"],
+        origin: [process.env.FRONTEND_URL],
         credentials: true,
-               
       },
+      port: 8080,
+
     },
     db: {
       adapter: 'mongoose',

@@ -305,9 +305,10 @@ const {
 /* harmony default export */ var keystone = (withAuth(Object(schema_["config"])({
   server: {
     cors: {
-      origin: [process.env.FRONTEND_URL + ":8080"],
+      origin: [process.env.FRONTEND_URL],
       credentials: true
-    }
+    },
+    port: 8080
   },
   db: {
     adapter: 'mongoose',
