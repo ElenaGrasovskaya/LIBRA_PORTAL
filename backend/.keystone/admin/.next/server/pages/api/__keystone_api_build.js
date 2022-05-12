@@ -307,7 +307,7 @@ const {
     cors: {
       origin: [process.env.FRONTEND_URL],
       credentials: true,
-      allowedHeaders: "Accept, Accept-Language, Content-Language, Content-Type"
+      allowedHeaders: "*"
     },
     port: 8080
   },
